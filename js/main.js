@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload } from './models.js?v=4';
+import { builders, propBall, propNut, preload } from './models.js?v=7';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [
@@ -178,7 +178,7 @@ function addLights(scene, span, renderer) {
   pmrem.dispose();
   const d = new THREE.DirectionalLight(0xffffff, 2.6);
   d.position.set(-6, 12, 7);
-  const rim = new THREE.DirectionalLight(0xffb89a, 1.6);
+  const rim = new THREE.DirectionalLight(0xdfe4ff, 1.5);
   rim.position.set(8, 5, -8);
   scene.add(rim);
   d.castShadow = true;
@@ -402,7 +402,7 @@ function playground() {
   function frame(now) {
     if (!running) return;
     requestAnimationFrame(frame);
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now;
     for (const it of items) faceFront(it, dt);
     world.step(1 / 60, dt, 3);
     if (!reduced) clock.t += dt;
@@ -482,7 +482,7 @@ function makeViewer() {
   function frame(now) {
     if (!running) return;
     requestAnimationFrame(frame);
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now;
     if (!reduced) t += dt;
     if (!dragging) {
       yaw += vy; vy *= 0.94; idle += dt;

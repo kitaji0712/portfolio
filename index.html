@@ -9,7 +9,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=4">
+<script>
+  /* accent colour: one token. Try others with ?accent=lime|blue|mint|mono */
+  try {
+    const P = { lime: '205 255 64', blue: '84 128 255', mint: '72 255 190', mono: '243 242 239' };
+    const a = new URLSearchParams(location.search).get('accent');
+    if (P[a]) document.documentElement.style.setProperty('--accent-rgb', P[a]);
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="styles.css?v=7">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -129,6 +137,6 @@
 </section>
 </main>
 
-<script type="module" src="js/main.js?v=4"></script>
+<script type="module" src="js/main.js?v=7"></script>
 </body>
 </html>

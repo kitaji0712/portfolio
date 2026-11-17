@@ -16,7 +16,7 @@
 } }
 </script>
 <style>
-  :root { --bg: #08080a; --fg: #f3f2ef; --mute: #9a9aa0; --dim: #5c5c63; --line: rgba(255,255,255,.1); --line-2: rgba(255,255,255,.18); --accent: #ff5a1f; }
+  :root { --bg: #08080a; --fg: #f3f2ef; --mute: #9a9aa0; --dim: #5c5c63; --line: rgba(255,255,255,.1); --line-2: rgba(255,255,255,.18); --accent: rgb(205 255 64); }
   * { box-sizing: border-box; margin: 0; }
   html, body { background: var(--bg); color: var(--fg); font-family: "Geist", "Zen Kaku Gothic New", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 20px clamp(16px, 3vw, 40px); border-bottom: 1px solid var(--line); }
@@ -47,17 +47,17 @@
 <div class="grid">
   <section class="pane">
     <div class="label"><span class="tag">A</span><b>Blender で作り直し</b><span>印刷パーツの寸法から輪郭だけ取り、継ぎ目のない滑らかな面で作り直したもの。いまサイトで使っている版。</span></div>
-    <canvas data-model="models/suyasuya.glb?v=5"></canvas>
+    <canvas data-model="models/suyasuya.glb?v=7"></canvas>
   </section>
   <section class="pane">
     <div class="label"><span class="tag">B</span><b>元の STL（印刷パーツ）</b><span>3D プリントしたパーツをそのまま組み立てたもの。分割線・目の穴・首の切り欠き・面のカクつきもそのまま。</span></div>
-    <canvas data-model="models/suyasuya-stl.glb?v=5"></canvas>
+    <canvas data-model="models/suyasuya-stl.glb?v=7"></canvas>
   </section>
 </div>
 <div class="ctrl">
   <button type="button" id="move" aria-pressed="true">Motion</button>
   <button type="button" id="front">Front</button>
 </div>
-<script type="module" src="js/compare.js?v=5"></script>
+<script type="module" src="js/compare.js?v=7"></script>
 </body>
 </html>

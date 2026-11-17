@@ -9,7 +9,7 @@ export async function preload() {
   const loader = new GLTFLoader();
   const base = new URL('../models/', import.meta.url);
   await Promise.all(['suyasuya'].map(async (name) => {
-    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=4', base).href)).scene; }
+    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=7', base).href)).scene; }
     catch (e) { console.warn('model failed to load:', name, e); }
   }));
 }
@@ -21,7 +21,11 @@ const M = {
   chrome: new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.08, metalness: 1 }),
   glass: new THREE.MeshStandardMaterial({ color: 0x050506, roughness: 0.08, metalness: 0.6 }),
   fur: new THREE.MeshPhysicalMaterial({ color: 0xdedbd4, roughness: 1, sheen: 1, sheenRoughness: 0.6, sheenColor: 0xffffff }),
-  accent: new THREE.MeshStandardMaterial({ color: 0xff5a1f, roughness: 0.4, emissive: 0xff4a10, emissiveIntensity: 0.9 }),
+  accent: (() => {                                  // follows --accent-rgb in the page
+    const rgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim().split(/\s+/).join(',') || '205,255,64';
+    const c = new THREE.Color(`rgb(${rgb})`);
+    return new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, emissive: c, emissiveIntensity: 0.55 });
+  })(),
   glow: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.4 }),
   pla: new THREE.MeshPhysicalMaterial({ color: 0x1e1e22, roughness: 0.32, metalness: 0.1, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
   hole: new THREE.MeshBasicMaterial({ color: 0x000000 }),
@@ -235,14 +239,14 @@ export function conductor() {
   const xs = [-0.96, -0.5, -0.05, 0.45, 0.95];
   return finish(g, (t) => {
     // four-beat pattern: down, left, right, up
-    const beat = (t * 1.6) % 4, b = Math.floor(beat), f = beat - b;
+    const beat = (((t * 1.6) % 4) + 4) % 4, b = Math.floor(beat), f = beat - b;
     const ease = f * f * (3 - 2 * f);
     const pose = [[0.15, -0.55], [-0.6, -0.1], [0.65, -0.05], [0, 0.45]];
     const a = pose[b], c = pose[(b + 1) % 4];
     baton.rotation.z = -(a[0] + (c[0] - a[0]) * ease);
     baton.rotation.x = -(a[1] + (c[1] - a[1]) * ease) * 0.6 - 0.25;
     // the soloist changes every two bars
-    const solo = Math.floor(t / 5) % 5;
+    const solo = ((Math.floor(t / 5) % 5) + 5) % 5;
     spot.position.x += (xs[solo] - spot.position.x) * 0.08;
     inst.forEach((p, i) => {
       const on = i === solo;
@@ -276,7 +280,7 @@ export function browser() {
 export function hoop() {
   const g = new THREE.Group();
   const ring = shadow(new THREE.Mesh(new THREE.TorusGeometry(0.86, 0.07, 16, 96), M.steel));
-  g.add(ring, faceZ(cyl(0.84, 0.03, M.bone, 96)), at(rbox(0.2, 0.16, 0.12, M.dark), 0, 0.96, 0));
+  g.add(ring, faceZ(cyl(0.84, 0.03, M.dark, 96)), at(rbox(0.2, 0.16, 0.12, M.dark), 0, 0.96, 0));
   const stitches = [];
   const N = 22;
   for (let i = 0; i < N; i++) {

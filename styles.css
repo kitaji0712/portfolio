@@ -5,7 +5,8 @@
   --dim: #5c5c63;
   --line: rgba(255, 255, 255, .1);
   --line-2: rgba(255, 255, 255, .18);
-  --accent: #ff5a1f;
+  --accent-rgb: 205 255 64;          /* the one accent; see the switch in index.html */
+  --accent: rgb(var(--accent-rgb));
   --pad: clamp(20px, 3.2vw, 48px);
   --sans: "Geist", "Zen Kaku Gothic New", system-ui, sans-serif;
   --jp: "Zen Kaku Gothic New", "Geist", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -35,7 +36,7 @@ ul, ol { list-style: none; padding: 0; }
   content: ""; position: absolute; inset: 0;
   background:
     radial-gradient(60% 46% at 78% -6%, rgba(255, 255, 255, .13), rgba(255, 255, 255, .05) 38%, rgba(255, 255, 255, .012) 68%, transparent 100%),
-    radial-gradient(44% 40% at -4% 108%, rgba(255, 90, 31, .1), rgba(255, 90, 31, .03) 46%, transparent 100%),
+    radial-gradient(44% 40% at -4% 108%, rgb(var(--accent-rgb) / .07), rgb(var(--accent-rgb) / .02) 46%, transparent 100%),
     radial-gradient(circle at 1px 1px, rgba(255, 255, 255, .11) 1px, transparent 1.6px) 0 0 / 32px 32px;
   -webkit-mask-image: radial-gradient(120% 90% at 60% 0%, #000 30%, rgba(0, 0, 0, .35) 70%, transparent 100%);
           mask-image: radial-gradient(120% 90% at 60% 0%, #000 30%, rgba(0, 0, 0, .35) 70%, transparent 100%);
@@ -272,7 +273,7 @@ ul, ol { list-style: none; padding: 0; }
   min-height: 100svh; display: flex; flex-direction: column; justify-content: space-between;
   padding: clamp(88px, 12vw, 160px) var(--pad) 22px;
   border-top: 1px solid var(--line);
-  background: radial-gradient(70% 60% at 50% 110%, rgba(255, 90, 31, .16), rgba(255, 90, 31, .04) 50%, transparent 100%);
+  background: radial-gradient(70% 60% at 50% 110%, rgb(var(--accent-rgb) / .11), rgb(var(--accent-rgb) / .03) 50%, transparent 100%);
 }
 .contact-big {
   display: block; margin-top: 26px;

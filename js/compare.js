@@ -19,7 +19,7 @@ for (const canvas of document.querySelectorAll('canvas[data-model]')) {
   scene.environment = pm.fromScene(new RoomEnvironment(renderer), 0.04).texture;
   const key = new THREE.DirectionalLight(0xffffff, 2.6); key.position.set(-6, 12, 7); key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4 }); key.shadow.radius = 5;
-  const rim = new THREE.DirectionalLight(0xffb89a, 1.6); rim.position.set(8, 5, -8);
+  const rim = new THREE.DirectionalLight(0xdfe4ff, 1.5); rim.position.set(8, 5, -8);
   scene.add(key, rim);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.6 }));
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
@@ -69,7 +69,7 @@ document.getElementById('front').addEventListener('click', () => { state.yaw = 0
 let last = performance.now();
 (function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now;
   if (state.move) state.t += dt;
   const k = (state.t % 9) / 9;                       // the same doze cycle for both
   let nod = 0, pan = 0;
