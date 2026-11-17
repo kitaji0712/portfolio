@@ -11,6 +11,8 @@ const M = {
   fur: new THREE.MeshPhysicalMaterial({ color: 0xdedbd4, roughness: 1, sheen: 1, sheenRoughness: 0.6, sheenColor: 0xffffff }),
   accent: new THREE.MeshStandardMaterial({ color: 0xff5a1f, roughness: 0.4, emissive: 0xff4a10, emissiveIntensity: 0.9 }),
   glow: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.4 }),
+  pla: new THREE.MeshPhysicalMaterial({ color: 0x1e1e22, roughness: 0.32, metalness: 0.1, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
+  hole: new THREE.MeshBasicMaterial({ color: 0x000000 }),
 };
 
 function shadow(m) { m.castShadow = true; m.receiveShadow = true; return m; }
@@ -126,47 +128,137 @@ export function fridge() {
   });
 }
 
-/* suyasuya: a soft thing that dozes */
+/* suyasuya: a 3D-printed egg with a round head that dozes off */
 export function sleeper() {
   const g = new THREE.Group();
-  const body = ball(0.8, M.fur); body.scale.set(1.2, 0.78, 1);
-  const lid = (s) => {
-    const m = shadow(new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.016, 8, 24, Math.PI), M.dark));
-    m.rotation.z = Math.PI; return at(m, s * 0.17, 0.02, 0.47);
-  };
-  const head = pivot(0.62, 0.34, 0.1,
-    ball(0.5, M.fur), lid(-1), lid(1),
-    at(ball(0.16, M.fur), -0.3, 0.38, 0), at(ball(0.16, M.fur), 0.3, 0.38, 0),
-  );
-  head.rotation.y = 0.5;
-  g.add(body, head, at(rbox(0.5, 0.12, 0.5, M.dark, 0.05), -0.1, -0.64, 0));
+  // body: egg turned on a lathe, flat at the base, open at the top
+  const prof = [];
+  for (let i = 0; i <= 24; i++) {
+    const t = i / 24, y = t * 1.5;
+    // widest just below the middle, a little narrower at the mouth, rounded into the base
+    const r = (0.64 + 0.08 * Math.sin(Math.PI * Math.min(1, t * 1.25)) - 0.06 * t * t) * Math.sqrt(Math.min(1, 0.55 + t * 6));
+    prof.push(new THREE.Vector2(r, y));
+  }
+  prof.unshift(new THREE.Vector2(0, 0));
+  const body = shadow(new THREE.Mesh(new THREE.LatheGeometry(prof, 64), M.pla));
+  const seam = at(shadow(new THREE.Mesh(new THREE.TorusGeometry(0.715, 0.006, 6, 96), M.hole)), 0, 0.68, 0);
+  seam.rotation.x = Math.PI / 2;
+  const rim = at(shadow(new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.025, 10, 64), M.pla)), 0, 1.5, 0);
+  rim.rotation.x = Math.PI / 2;
+
+  // head: two halves with a vertical seam, two round eyes, a ledge round the face
+  const R = 0.62;
+  const head = new THREE.Group();
+  const half = (start) => shadow(new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32, start, Math.PI - 0.012), M.pla));
+  head.add(half(0.006), half(Math.PI + 0.006));
+  const ledge = shadow(new THREE.Mesh(new THREE.TorusGeometry(R * 0.985, 0.02, 8, 64, Math.PI * 0.9), M.pla));
+  ledge.rotation.set(Math.PI / 2, 0, Math.PI * 0.05);
+  at(ledge, 0, -0.08, 0);
+  head.add(ledge);
+  const eyes = [-1, 1].map((sx) => {
+    const a = sx * 0.33;
+    const e = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 24), M.hole));
+    e.position.set(Math.sin(a) * R * 0.97, -0.13, Math.cos(a) * R * 0.97);
+    e.lookAt(e.position.clone().multiplyScalar(2));
+    e.rotateX(Math.PI / 2);
+    const ring = shadow(new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.01, 8, 24), M.steel));
+    ring.position.copy(e.position); ring.lookAt(e.position.clone().multiplyScalar(2));
+    head.add(e, ring);
+    return e;
+  });
+  const neck = new THREE.Group();                 // pivot sits at the top of the body
+  neck.position.set(0, 1.5, 0);
+  head.position.set(0, R * 0.62, 0.04);
+  neck.add(at(rbox(0.16, 0.3, 0.16, M.dark, 0.03), 0, 0.12, 0), head);
+  g.add(body, seam, rim, neck);
+
   return finish(g, (t) => {
-    const b = Math.sin(t * 1.3);
-    body.scale.y = 0.78 + b * 0.03;
-    const k = (t % 9) / 9;                       // nod off, then jolt awake
-    const nod = k < 0.7 ? (k / 0.7) ** 2 * 0.5 : 0.5 * Math.max(0, 1 - (k - 0.7) / 0.06);
-    head.rotation.x = nod;
-    head.position.y = 0.34 + b * 0.02;
+    const k = (t % 9) / 9;                         // nod off slowly, jolt awake, look round
+    let nod = 0, pan = 0;
+    if (k < 0.62) nod = (k / 0.62) ** 2 * 0.5;
+    else if (k < 0.66) nod = 0.5 * (1 - (k - 0.62) / 0.04);
+    else pan = Math.sin((k - 0.66) / 0.34 * Math.PI * 2) * 0.55;
+    neck.rotation.x = nod;
+    neck.rotation.y = pan;
+    const blink = k < 0.62 ? Math.max(0.15, 1 - k * 1.4) : 1;
+    eyes.forEach((e) => (e.scale.x = e.scale.z = blink));
   });
 }
 
-/* mocopi: a sensor puck and a baton keeping time */
+/* mocopi Conductor: the exhibit screen with five instruments, and a baton keeping four */
 export function conductor() {
   const g = new THREE.Group();
-  const baton = pivot(0, 0.14, 0,
-    at(cyl(0.022, 1.9, M.bone, 16), 0, 0.95, 0),
-    at(ball(0.07, M.accent), 0, 1.9, 0),
-    ball(0.13, M.steel),
-  );
+  // rolling stand
   g.add(
-    cyl(0.62, 0.24, M.dark, 64),
-    at(cyl(0.5, 0.02, M.glass, 64), 0, 0.125, 0),
-    at(cyl(0.63, 0.03, M.steel, 64), 0, -0.06, 0),
-    baton,
+    at(rbox(1.5, 0.08, 0.6, M.dark, 0.03), 0, -1.05, 0),
+    at(rbox(0.08, 1.15, 0.08, M.steel, 0.02), -0.45, -0.5, -0.05),
+    at(rbox(0.08, 1.15, 0.08, M.steel, 0.02), 0.45, -0.5, -0.05),
+    at(rbox(1.0, 0.05, 0.4, M.dark, 0.02), 0, -0.45, 0),
   );
+  [-0.62, 0.62].forEach((x) => [-0.22, 0.22].forEach((z) => g.add(at(ball(0.07, M.dark), x, -1.13, z))));
+  // display
+  g.add(
+    at(rbox(2.6, 1.5, 0.1, M.dark, 0.04), 0, 0.55, -0.08),
+    at(rbox(2.48, 1.38, 0.02, M.glass, 0.01), 0, 0.55, -0.02),
+  );
+  // the orchestra: flute, oboe, clarinet, horn, trumpet
+  const inst = [];
+  const add = (x, grp) => { grp.position.set(x, 0.42, 0.04); g.add(grp); inst.push(grp); };
+  const pipe = (len, r, bell) => {
+    const p = new THREE.Group();
+    p.add(cyl(r, len, M.bone, 20));
+    for (let i = 0; i < 4; i++) p.add(at(cyl(r * 1.5, 0.02, M.steel, 16), 0, -len * 0.3 + i * len * 0.18, 0));
+    if (bell) { const c = shadow(new THREE.Mesh(new THREE.CylinderGeometry(r, r * 2.6, 0.12, 24, 1, true), M.bone)); c.position.y = -len / 2 - 0.05; p.add(c); }
+    return p;
+  };
+  add(-0.96, pipe(0.95, 0.03, false));
+  add(-0.5, pipe(0.8, 0.034, true));
+  add(-0.05, pipe(0.85, 0.036, true));
+  const horn = new THREE.Group();
+  horn.add(shadow(new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.035, 12, 48), M.steel)));
+  const hb = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.17, 0.22, 32, 1, true), M.steel));
+  hb.rotation.z = -Math.PI / 2; hb.position.set(0.24, -0.14, 0); horn.add(hb);
+  add(0.45, horn);
+  const trumpet = new THREE.Group();
+  trumpet.add(cyl(0.028, 0.6, M.steel, 16));
+  const tb = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.14, 0.2, 32, 1, true), M.steel));
+  tb.position.y = 0.38; trumpet.add(tb);
+  [-0.07, 0, 0.07].forEach((y) => trumpet.add(at(cyl(0.022, 0.12, M.bone, 12), 0.06, y, 0)));
+  trumpet.rotation.z = -0.25;
+  add(0.95, trumpet);
+  // the soloist's spotlight
+  const spot = at(rbox(0.36, 1.16, 0.012, M.accent, 0.01), 0, 0.55, -0.005);
+  spot.material = M.accent;
+  g.add(spot);
+  // baton and the conductor's hand-held sensor
+  const baton = new THREE.Group();
+  baton.add(
+    at(cyl(0.016, 1.0, M.bone, 12), 0, 0.5, 0),
+    at(ball(0.035, M.accent), 0, 1.0, 0),
+    at(rbox(0.12, 0.2, 0.12, M.dark, 0.04), 0, -0.05, 0),
+    at(faceZ(cyl(0.05, 0.03, M.steel)), 0, 0.0, 0.07),
+  );
+  baton.position.set(0.4, -0.6, 0.85);
+  g.add(baton);
+
+  const xs = [-0.96, -0.5, -0.05, 0.45, 0.95];
   return finish(g, (t) => {
-    baton.rotation.z = Math.sin(t * 3.2) * 0.55;
-    baton.rotation.x = Math.sin(t * 6.4) * 0.16;
+    // four-beat pattern: down, left, right, up
+    const beat = (t * 1.6) % 4, b = Math.floor(beat), f = beat - b;
+    const ease = f * f * (3 - 2 * f);
+    const pose = [[0.15, -0.55], [-0.6, -0.1], [0.65, -0.05], [0, 0.45]];
+    const a = pose[b], c = pose[(b + 1) % 4];
+    baton.rotation.z = -(a[0] + (c[0] - a[0]) * ease);
+    baton.rotation.x = -(a[1] + (c[1] - a[1]) * ease) * 0.6 - 0.25;
+    // the soloist changes every two bars
+    const solo = Math.floor(t / 5) % 5;
+    spot.position.x += (xs[solo] - spot.position.x) * 0.08;
+    inst.forEach((p, i) => {
+      const on = i === solo;
+      const s = p.scale.x + ((on ? 1.12 : 1) - p.scale.x) * 0.1;
+      p.scale.setScalar(s);
+      p.position.y = 0.42 + (on ? Math.abs(Math.sin(t * Math.PI * 1.6)) * 0.05 : 0);
+    });
   });
 }
 

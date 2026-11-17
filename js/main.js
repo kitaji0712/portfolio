@@ -82,17 +82,17 @@ addEventListener('resize', fitName);
 const list = $('#list');
 list.innerHTML = WORKS.map((w, i) => `
   <li class="w" data-key="${w.key}">
-    <button class="w-head" type="button" aria-expanded="false">
+    <div class="w-head">
       <span class="w-no">${String(i + 1).padStart(2, '0')}</span>
-      <span class="w-title${w.jp ? ' jp' : ''}">${w.title}</span>
+      <h3 class="w-title${w.jp ? ' jp' : ''}">${w.title}</h3>
       <span class="w-meta">${w.meta}</span>
-      <span class="w-sub">${w.sub}</span>
-    </button>
-    <div class="w-body"><div class="w-inner"><div class="w-pad">
+      <p class="w-sub">${w.sub}</p>
+    </div>
+    <div class="w-pad">
       <p class="w-desc">${w.desc}</p>
       <ul class="w-tags">${w.tags.map((t) => `<li>${t}</li>`).join('')}</ul>
       ${w.link ? `<a class="btn ghost w-link" href="${w.link[1]}" target="_blank" rel="noopener">${w.link[0]} <i>↗</i></a>` : ''}
-    </div></div></div>
+    </div>
   </li>`).join('');
 const rows = [...list.children];
 let activeKey = null;
@@ -105,45 +105,28 @@ function setActive(key) {
   $('#fig-no').textContent = LABEL[key][0];
   viewer?.show(key);
 }
-function setOpen(row, open) {
-  row.classList.toggle('open', open);
-  row.querySelector('.w-head').setAttribute('aria-expanded', open);
-}
 function openWork(key) {
   const row = rows.find((r) => r.dataset.key === key);
-  rows.forEach((r) => setOpen(r, r === row));
-  setActive(key);
-  hoverLock = performance.now() + 1500;
   row.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
 }
-let hoverLock = 0;
-rows.forEach((row) => {
-  row.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') setActive(row.dataset.key); });
-  row.querySelector('.w-head').addEventListener('click', () => {
-    setOpen(row, !row.classList.contains('open'));
-    setActive(row.dataset.key);
-  });
-  row.querySelector('.w-head').addEventListener('focus', () => setActive(row.dataset.key));
-});
-// touch devices have no hover: follow whichever row sits nearest the middle of the screen
-if (!matchMedia('(hover: hover)').matches) {
-  let queued = false;
-  addEventListener('scroll', () => {
-    if (queued || performance.now() < hoverLock) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      const mid = innerHeight * 0.62;
-      let best = null, bd = Infinity;
-      for (const r of rows) {
-        const b = r.querySelector('.w-head').getBoundingClientRect();
-        const d = Math.abs((b.top + b.bottom) / 2 - mid);
-        if (d < bd) { bd = d; best = r; }
-      }
-      if (best && bd < innerHeight * 0.5) setActive(best.dataset.key);
-    });
-  }, { passive: true });
+// the work whose block crosses the reading line drives the viewer
+function pickByScroll() {
+  const line = innerHeight * (innerWidth <= 860 ? 0.68 : 0.5);
+  let best = null, bd = Infinity;
+  for (const r of rows) {
+    const b = r.getBoundingClientRect();
+    const d = b.top <= line && b.bottom >= line ? 0 : Math.min(Math.abs(b.top - line), Math.abs(b.bottom - line));
+    if (d < bd) { bd = d; best = r; }
+  }
+  if (best) setActive(best.dataset.key);
 }
+let queued = false;
+addEventListener('scroll', () => {
+  if (queued) return;
+  queued = true;
+  requestAnimationFrame(() => { queued = false; pickByScroll(); });
+}, { passive: true });
+addEventListener('resize', pickByScroll);
 
 /* ───────── shared scene bits ───────── */
 function makeRenderer(canvas) {
@@ -504,4 +487,4 @@ try {
   document.documentElement.classList.add('no-3d');
 }
 setActive(WORKS[0].key);
-setOpen(rows[0], true);
+pickByScroll();
