@@ -59,6 +59,7 @@ R, cz = 34, 104
 pivot = Vector((0, 0, (cz - 14) * mm))
 head = bpy.data.objects.new('Head', None); bpy.context.collection.objects.link(head)
 head.location = pivot
+bpy.context.view_layer.update()
 bpy.ops.mesh.primitive_uv_sphere_add(segments=96, ring_count=48, radius=R * mm, location=(0, 0, cz * mm))
 sphere = bpy.context.active_object; sphere.name = 'HeadShell'
 sphere.data.materials.append(SHELL)
