@@ -9,7 +9,7 @@ export async function preload() {
   const loader = new GLTFLoader();
   const base = new URL('../models/', import.meta.url);
   await Promise.all(['suyasuya'].map(async (name) => {
-    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb', base).href)).scene; }
+    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=4', base).href)).scene; }
     catch (e) { console.warn('model failed to load:', name, e); }
   }));
 }
@@ -142,7 +142,7 @@ export function fridge() {
 
 /* suyasuya: modelled in Blender from the printed parts (tools/suyasuya.py) */
 const SUYA = {
-  shell: new THREE.MeshPhysicalMaterial({ color: 0x242428, roughness: 0.82, sheen: 0.6, sheenRoughness: 0.8, sheenColor: 0x9a9aa8 }),
+  shell: new THREE.MeshPhysicalMaterial({ color: 0x34343a, roughness: 0.82, sheen: 0.6, sheenRoughness: 0.8, sheenColor: 0x9a9aa8 }),
   eye: new THREE.MeshPhysicalMaterial({ color: 0x020203, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 }),
 };
 export function sleeper() {

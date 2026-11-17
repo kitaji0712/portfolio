@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload } from './models.js';
+import { builders, propBall, propNut, preload } from './models.js?v=4';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [
@@ -30,6 +30,7 @@ const WORKS = [
     key: 'mocopi', title: 'mocopi Conductor', sub: '体の動きで、オーケストラを指揮する', meta: 'Unity — 2026',
     desc: 'モーションキャプチャ mocopi を着けて、腕の振りと視線でオーケストラを指揮する展示作品。見た楽器が選ばれ、振りの大きさが音になり、止めのポーズで演奏が止まります。Unity で制作しました。',
     tags: ['Unity', 'C#', 'mocopi', 'Motion capture'],
+    poster: ['assets/mocopi-poster.jpg', 'assets/mocopi-poster-thumb.jpg', 'mocopi Conductor の展示ポスター'],
   },
   {
     key: 'kr', title: 'Keio Robotics', sub: 'ロボティクスチームの Web サイト', meta: 'Website — 2026',
@@ -92,9 +93,42 @@ list.innerHTML = WORKS.map((w, i) => `
       <p class="w-desc">${w.desc}</p>
       <ul class="w-tags">${w.tags.map((t) => `<li>${t}</li>`).join('')}</ul>
       ${w.link ? `<a class="btn ghost w-link" href="${w.link[1]}" target="_blank" rel="noopener">${w.link[0]} <i>↗</i></a>` : ''}
+      ${w.poster ? `<button class="poster" type="button" data-full="${w.poster[0]}" aria-label="${w.poster[2]}を全画面で見る">
+        <img src="${w.poster[1]}" alt="${w.poster[2]}" width="320" height="453" loading="lazy">
+        <span class="poster-cta">Poster <i>↗</i></span>
+      </button>` : ''}
     </div>
   </li>`).join('');
 const rows = [...list.children];
+
+/* full-screen poster */
+const lb = document.createElement('dialog');
+lb.className = 'lightbox';
+lb.innerHTML = `<img alt=""><button class="lb-close" type="button" aria-label="閉じる">Close</button>`;
+document.body.append(lb);
+const lbImg = lb.querySelector('img');
+function closeLb() {
+  lb.classList.remove('on');
+  setTimeout(() => { lb.close(); lb.classList.remove('zoom'); }, reduced ? 0 : 200);
+}
+list.addEventListener('click', (e) => {
+  const b = e.target.closest('.poster');
+  if (!b) return;
+  lbImg.src = b.dataset.full; lbImg.alt = b.querySelector('img').alt;
+  lb.showModal();
+  requestAnimationFrame(() => lb.classList.add('on'));
+});
+lbImg.addEventListener('click', (e) => {                 // tap to read at full width, tap again to fit
+  e.stopPropagation();
+  lb.classList.toggle('zoom');
+  if (lb.classList.contains('zoom')) {
+    const r = lbImg.getBoundingClientRect();
+    lb.scrollTop = ((e.clientY - r.top) / r.height) * lb.scrollHeight - innerHeight / 2;
+  }
+});
+lb.querySelector('.lb-close').addEventListener('click', closeLb);
+lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(); });
+lb.addEventListener('cancel', (e) => { e.preventDefault(); closeLb(); });
 let activeKey = null;
 let viewer = null;
 
