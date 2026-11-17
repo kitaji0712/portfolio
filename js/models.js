@@ -1,6 +1,18 @@
 // Hand-built models, one per project. Monochrome: ceramic white, gunmetal, steel, one accent.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// Models made in Blender (tools/*.py) are loaded once, then cloned per scene.
+const gltf = {};
+export async function preload() {
+  const loader = new GLTFLoader();
+  const base = new URL('../models/', import.meta.url);
+  await Promise.all(['suyasuya'].map(async (name) => {
+    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb', base).href)).scene; }
+    catch (e) { console.warn('model failed to load:', name, e); }
+  }));
+}
 
 const M = {
   bone: new THREE.MeshPhysicalMaterial({ color: 0xe8e6e1, roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.35 }),
@@ -128,60 +140,39 @@ export function fridge() {
   });
 }
 
-/* suyasuya: a 3D-printed egg with a round head that dozes off */
+/* suyasuya: modelled in Blender from the printed parts (tools/suyasuya.py) */
+const SUYA = {
+  shell: new THREE.MeshPhysicalMaterial({ color: 0x242428, roughness: 0.82, sheen: 0.6, sheenRoughness: 0.8, sheenColor: 0x9a9aa8 }),
+  eye: new THREE.MeshPhysicalMaterial({ color: 0x020203, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 }),
+};
 export function sleeper() {
-  const g = new THREE.Group();
-  // body: egg turned on a lathe, flat at the base, open at the top
-  const prof = [];
-  for (let i = 0; i <= 24; i++) {
-    const t = i / 24, y = t * 1.5;
-    // widest just below the middle, a little narrower at the mouth, rounded into the base
-    const r = (0.64 + 0.08 * Math.sin(Math.PI * Math.min(1, t * 1.25)) - 0.06 * t * t) * Math.sqrt(Math.min(1, 0.55 + t * 6));
-    prof.push(new THREE.Vector2(r, y));
+  const src = gltf.suyasuya;
+  if (!src) {                                       // fallback while offline: a plain egg and ball
+    const g = new THREE.Group();
+    g.add(at(ball(0.7, M.pla), 0, 0.7, 0), at(ball(0.62, M.pla), 0, 1.8, 0));
+    return finish(g, null);
   }
-  prof.unshift(new THREE.Vector2(0, 0));
-  const body = shadow(new THREE.Mesh(new THREE.LatheGeometry(prof, 64), M.pla));
-  const seam = at(shadow(new THREE.Mesh(new THREE.TorusGeometry(0.715, 0.006, 6, 96), M.hole)), 0, 0.68, 0);
-  seam.rotation.x = Math.PI / 2;
-  const rim = at(shadow(new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.025, 10, 64), M.pla)), 0, 1.5, 0);
-  rim.rotation.x = Math.PI / 2;
-
-  // head: two halves with a vertical seam, two round eyes, a ledge round the face
-  const R = 0.62;
-  const head = new THREE.Group();
-  const half = (start) => shadow(new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32, start, Math.PI - 0.012), M.pla));
-  head.add(half(0.006), half(Math.PI + 0.006));
-  const ledge = shadow(new THREE.Mesh(new THREE.TorusGeometry(R * 0.985, 0.02, 8, 64, Math.PI * 0.9), M.pla));
-  ledge.rotation.set(Math.PI / 2, 0, Math.PI * 0.05);
-  at(ledge, 0, -0.08, 0);
-  head.add(ledge);
-  const eyes = [-1, 1].map((sx) => {
-    const a = sx * 0.33;
-    const e = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.04, 24), M.hole));
-    e.position.set(Math.sin(a) * R * 0.97, -0.13, Math.cos(a) * R * 0.97);
-    e.lookAt(e.position.clone().multiplyScalar(2));
-    e.rotateX(Math.PI / 2);
-    const ring = shadow(new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.01, 8, 24), M.steel));
-    ring.position.copy(e.position); ring.lookAt(e.position.clone().multiplyScalar(2));
-    head.add(e, ring);
-    return e;
+  const g = src.clone(true);
+  g.scale.setScalar(0.17);
+  let head = null;
+  const eyes = [];
+  g.traverse((o) => {
+    if (o.name === 'Head') head = o;
+    if (!o.isMesh) return;
+    o.castShadow = o.receiveShadow = true;
+    o.material = o.name.startsWith('Eye') ? SUYA.eye : SUYA.shell;
+    if (o.name.startsWith('Eye')) eyes.push(o);
   });
-  const neck = new THREE.Group();                 // pivot sits at the top of the body
-  neck.position.set(0, 1.5, 0);
-  head.position.set(0, R * 0.62, 0.04);
-  neck.add(at(rbox(0.16, 0.3, 0.16, M.dark, 0.03), 0, 0.12, 0), head);
-  g.add(body, seam, rim, neck);
-
+  const eyeZ = eyes.map((e) => e.scale.z);
   return finish(g, (t) => {
     const k = (t % 9) / 9;                         // nod off slowly, jolt awake, look round
     let nod = 0, pan = 0;
-    if (k < 0.62) nod = (k / 0.62) ** 2 * 0.5;
-    else if (k < 0.66) nod = 0.5 * (1 - (k - 0.62) / 0.04);
-    else pan = Math.sin((k - 0.66) / 0.34 * Math.PI * 2) * 0.55;
-    neck.rotation.x = nod;
-    neck.rotation.y = pan;
-    const blink = k < 0.62 ? Math.max(0.15, 1 - k * 1.4) : 1;
-    eyes.forEach((e) => (e.scale.x = e.scale.z = blink));
+    if (k < 0.62) nod = (k / 0.62) ** 2 * 0.42;
+    else if (k < 0.66) nod = 0.42 * (1 - (k - 0.62) / 0.04);
+    else pan = Math.sin((k - 0.66) / 0.34 * Math.PI * 2) * 0.5;
+    if (head) { head.rotation.x = nod; head.rotation.y = pan; }
+    const open = k > 0.4 && k < 0.62 ? 0.18 : (t % 3.7 < 0.12 ? 0.15 : 1);   // eyes get heavy as it dozes
+    eyes.forEach((e, i) => (e.scale.y = e.scale.x = 1, e.scale.z = eyeZ[i], e.scale.y = open));
   });
 }
 

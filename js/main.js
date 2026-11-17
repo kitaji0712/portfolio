@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut } from './models.js';
+import { builders, propBall, propNut, preload } from './models.js';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [
@@ -480,11 +480,13 @@ function makeViewer() {
 }
 
 try {
+  await preload();
   viewer = makeViewer();
   playground();
 } catch (err) {
   console.error(err);
   document.documentElement.classList.add('no-3d');
 }
+activeKey = null;
 setActive(WORKS[0].key);
 pickByScroll();

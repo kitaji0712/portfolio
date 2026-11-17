@@ -14,6 +14,7 @@ python3 -m http.server 4611
 
 - **作品**：`js/main.js` 冒頭の `WORKS`（並び順もここ）。
 - **3D モデル**：`js/models.js`。作品の `key` と同じ名前の関数を `builders` に登録する。
+- **Blender のモデル**：`tools/*.py` で作って `models/*.glb` に書き出す（例：`/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/suyasuya.py -- models/suyasuya.glb`）。suyasuya は印刷パーツの寸法から作っている。
 - **About・連絡先**：`index.html`。
 - **見た目**：`styles.css` の `:root` に色と余白。
 
