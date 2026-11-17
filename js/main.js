@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload } from './models.js?v=7';
+import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=8';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [
@@ -78,6 +78,15 @@ function fitName() {
 fitName();
 document.fonts?.ready.then(fitName);
 addEventListener('resize', fitName);
+
+/* ───────── theme switcher (only while trying themes) ───────── */
+if ('trying' in document.documentElement.dataset) {
+  const nav = document.createElement('nav');
+  nav.className = 'themes'; nav.setAttribute('aria-label', 'Theme');
+  nav.innerHTML = ['noir', 'yil', 'stanford', 'pastel', 'apple'].map((t) =>
+    `<a href="?theme=${t}${location.hash}" aria-current="${t === THEME}">${t === 'yil' ? 'YIL' : t[0].toUpperCase() + t.slice(1)}</a>`).join('');
+  document.body.append(nav);
+}
 
 /* ───────── work list ───────── */
 const list = $('#list');
@@ -169,7 +178,7 @@ function makeRenderer(canvas) {
   r.shadowMap.enabled = true;
   r.shadowMap.type = THREE.PCFSoftShadowMap;
   r.toneMapping = THREE.ACESFilmicToneMapping;
-  r.toneMappingExposure = 1.05;
+  r.toneMappingExposure = THEME === 'noir' ? 1.05 : 0.95;
   return r;
 }
 function addLights(scene, span, renderer) {
@@ -187,7 +196,7 @@ function addLights(scene, span, renderer) {
   d.shadow.radius = 5; d.shadow.bias = -0.0005; d.shadow.normalBias = 0.02;
   scene.add(d);
 }
-function shadowFloor(scene, y, opacity = 0.55) {
+function shadowFloor(scene, y, opacity = LOOK.shadow) {
   const f = new THREE.Mesh(new THREE.PlaneGeometry(120, 60), new THREE.ShadowMaterial({ opacity }));
   f.rotation.x = -Math.PI / 2; f.position.y = y; f.receiveShadow = true;
   scene.add(f);
@@ -429,7 +438,7 @@ function makeViewer() {
   camera.position.set(0, 1.5, 8.2);
   camera.lookAt(0, 0, 0);
   addLights(scene, 4, renderer);
-  shadowFloor(scene, -1.45, 0.6);
+  shadowFloor(scene, -1.45, LOOK.shadow * 1.1);
 
   const table = new THREE.Group();
   scene.add(table);

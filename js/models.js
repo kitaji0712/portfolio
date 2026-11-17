@@ -1,4 +1,4 @@
-// Hand-built models, one per project. Monochrome: ceramic white, gunmetal, steel, one accent.
+// Models, one per project. One shared finish per theme: ceramic, a secondary, metal, one accent.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -9,25 +9,38 @@ export async function preload() {
   const loader = new GLTFLoader();
   const base = new URL('../models/', import.meta.url);
   await Promise.all(['suyasuya'].map(async (name) => {
-    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=7', base).href)).scene; }
+    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=8', base).href)).scene; }
     catch (e) { console.warn('model failed to load:', name, e); }
   }));
 }
 
+/* Materials come from the page theme (<html data-theme>), so every model shares one finish. */
+export const THEME = document.documentElement.dataset.theme || 'noir';
+const accentRGB = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim().split(/\s+/).join(',') || '205,255,64';
+const LOOKS = {
+  //        primary (ceramic)                     secondary                                  metal                              accent glow
+  noir:     { bone: [0xe8e6e1, 0.38, 0.5, 0],    dark: [0x17171a, 0.34, 0, 0.85],    steel: [0x8b8b90, 0.3, 1],   glow: 0.55, shadow: 0.55 },
+  yil:      { bone: [0xfbfaf4, 0.42, 0.4, 0],    dark: [0x111111, 0.5, 0, 0.3],      steel: [0x9a9a96, 0.32, 1],  glow: 0.1,  shadow: 0.32 },
+  stanford: { bone: [0xf4f0e8, 0.45, 0.4, 0],    dark: [0x8c1515, 0.5, 0.2, 0],      steel: [0xb6a77a, 0.38, 1],  glow: 0.15, shadow: 0.24 },
+  pastel:   { bone: [0xf6f1ea, 0.55, 0.3, 0],    dark: [0x34333a, 0.6, 0.1, 0],      steel: [0xc9c6cf, 0.35, 0.8],glow: 0.2,  shadow: 0.2,
+              palette: [0xffc6d9, 0xbfe0ff, 0xc5efd3, 0xffe6a3, 0xffd2bd, 0xc9ecf2, 0xe4f3b4, 0xf6cfe8] },
+  apple:    { bone: [0xf5f5f7, 0.28, 0.9, 0],    dark: [0x4a4b50, 0.32, 0, 0.85],    steel: [0xd9dadc, 0.3, 1],   glow: 0.25, shadow: 0.2 },
+};
+export const LOOK = LOOKS[THEME] || LOOKS.noir;
+const phys = ([color, roughness, clearcoat, metalness]) =>
+  new THREE.MeshPhysicalMaterial({ color, roughness, clearcoat, clearcoatRoughness: 0.3, metalness });
 const M = {
-  bone: new THREE.MeshPhysicalMaterial({ color: 0xe8e6e1, roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.35 }),
-  dark: new THREE.MeshStandardMaterial({ color: 0x17171a, roughness: 0.34, metalness: 0.85 }),
-  steel: new THREE.MeshStandardMaterial({ color: 0x8b8b90, roughness: 0.3, metalness: 1 }),
+  bone: phys(LOOK.bone),
+  dark: phys(LOOK.dark),
+  steel: new THREE.MeshStandardMaterial({ color: LOOK.steel[0], roughness: LOOK.steel[1], metalness: LOOK.steel[2] }),
   chrome: new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.08, metalness: 1 }),
   glass: new THREE.MeshStandardMaterial({ color: 0x050506, roughness: 0.08, metalness: 0.6 }),
-  fur: new THREE.MeshPhysicalMaterial({ color: 0xdedbd4, roughness: 1, sheen: 1, sheenRoughness: 0.6, sheenColor: 0xffffff }),
-  accent: (() => {                                  // follows --accent-rgb in the page
-    const rgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim().split(/\s+/).join(',') || '205,255,64';
-    const c = new THREE.Color(`rgb(${rgb})`);
-    return new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, emissive: c, emissiveIntensity: 0.55 });
+  accent: (() => {
+    const c = new THREE.Color(`rgb(${accentRGB})`);
+    return new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, emissive: c, emissiveIntensity: LOOK.glow });
   })(),
   glow: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.4 }),
-  pla: new THREE.MeshPhysicalMaterial({ color: 0x1e1e22, roughness: 0.32, metalness: 0.1, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
+  pla: phys(LOOK.dark),
   hole: new THREE.MeshBasicMaterial({ color: 0x000000 }),
 };
 
@@ -146,7 +159,7 @@ export function fridge() {
 
 /* suyasuya: modelled in Blender from the printed parts (tools/suyasuya.py) */
 const SUYA = {
-  shell: new THREE.MeshPhysicalMaterial({ color: 0x34343a, roughness: 0.82, sheen: 0.6, sheenRoughness: 0.8, sheenColor: 0x9a9aa8 }),
+  shell: M.bone,                                    // same ceramic finish as every other model
   eye: new THREE.MeshPhysicalMaterial({ color: 0x020203, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 }),
 };
 export function sleeper() {
@@ -335,7 +348,16 @@ export function propNut() {
   return finish(g, null);
 }
 
-export const builders = {
+const raw = {
   stackchan, g1: humanoid, omoi: fridge, suyasuya: sleeper,
   mocopi: conductor, kr: browser, skip: hoop, bucket: phone,
 };
+const tinted = {};
+export const builders = Object.fromEntries(Object.entries(raw).map(([key, fn], i) => [key, () => {
+  const m = fn();
+  if (LOOK.palette) {
+    tinted[key] ??= phys([LOOK.palette[i % LOOK.palette.length], ...LOOK.bone.slice(1)]);
+    m.group.traverse((o) => { if (o.isMesh && o.material === M.bone) o.material = tinted[key]; });
+  }
+  return m;
+}]));
