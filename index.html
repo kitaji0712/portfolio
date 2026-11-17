@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08080a">
+<title>Yuta Kitajima — Physical AI, Robotics, Software</title>
+<meta name="description" content="北嶋優太（Yuta Kitajima）のポートフォリオ。慶應義塾大学 理工学部 / Keio Robotics / SKIP。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+  "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+} }
+</script>
+</head>
+<body>
+<div class="ground" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav-id" href="#top">Yuta Kitajima</a>
+  <span class="nav-status"><i></i>Tokyo <span id="clock">--:--</span></span>
+  <nav>
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a class="nav-cta" href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero" id="top">
+  <div class="hero-copy">
+    <p class="eyebrow enter" style="--i:0">Portfolio 2026 <span>/</span> Physical AI <span>/</span> Robotics <span>/</span> Software</p>
+    <h1 class="name enter" style="--i:1" aria-label="Yuta Kitajima"><span>YUTA</span> <span>KITAJIMA</span></h1>
+    <ul class="facts enter" style="--i:3">
+      <li>北嶋 優太</li>
+      <li>慶應義塾大学 理工学部 1年</li>
+      <li>Keio Robotics</li>
+      <li>SKIP</li>
+    </ul>
+  </div>
+
+  <canvas id="play" aria-label="作品のモデルが転がっている遊び場。ドラッグでつかんで投げられます。"></canvas>
+
+  <div class="hero-foot enter" style="--i:5">
+    <div class="ctrl">
+      <button id="respawn" type="button">Drop again</button>
+      <button id="zero" type="button" aria-pressed="false">Zero-G</button>
+    </div>
+    <p class="hint">Drag to throw <span>/</span> Click to open</p>
+  </div>
+  <div class="tag" id="tag" aria-hidden="true"></div>
+</section>
+
+<section class="work" id="work">
+  <div class="sec-head">
+    <h2>Selected work</h2>
+    <p><span id="fig-no">01</span> / 08</p>
+  </div>
+  <div class="work-grid">
+    <div class="viewer">
+      <canvas id="view" aria-label="選択中の作品の3Dモデル。ドラッグで回せます。"></canvas>
+    </div>
+    <ol class="list" id="list"></ol>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="sec-head">
+    <h2>About</h2>
+    <p>Keio University, Tokyo</p>
+  </div>
+  <div class="about-grid">
+    <div class="about-lead">
+      <p>
+        AI・ロボティクス・データの交わるところで、<em>手で触れる形になるまで</em>つくります。
+      </p>
+      <p class="about-sub">
+        慶應義塾大学 理工学部の 1 年生。Keio Robotics ではローカル LLM の環境と、
+        言語モデルをハードウェアに持ち込む会話ロボットをつくっています。
+        データサイエンスのコンペとハッカソンで受賞し、スタンフォード大学との交流プログラム
+        SKIP の運営もしています。技術をビジネスや金融に使うことにも関心があります。
+      </p>
+      <div class="about-links">
+        <a class="btn" href="https://www.linkedin.com/in/yuta-kitajima" target="_blank" rel="noopener">LinkedIn <i>↗</i></a>
+        <a class="btn ghost" href="https://github.com/kitaji0712" target="_blank" rel="noopener">GitHub <i>↗</i></a>
+      </div>
+    </div>
+
+    <div class="cv">
+      <h3>Experience</h3>
+      <ul>
+        <li><time>2026 —</time><div><b>Engineer, Keio Robotics</b><span>矢上イノベーションラボの学生ロボティクスチーム。ローカル LLM 環境と会話ロボットの開発、3D プリントでの試作。</span></div></li>
+        <li><time>2026 —</time><div><b>Organizer, SKIP</b><span>Stanford 大学との交流プログラム。Stanford の学生 9 名を迎えた 2 週間のプログラムを共同運営。ショートトリップ企画と広報。</span></div></li>
+        <li><time>2025 —</time><div><b>Teaching Assistant, KITE</b><span>高校生向けの英語漬け合宿（Keio Intensive Training in English）。教材づくりと運営。</span></div></li>
+      </ul>
+      <h3>Education</h3>
+      <ul>
+        <li><time>2026 —</time><div><b>慶應義塾大学 理工学部</b></div></li>
+        <li><time>2023 — 26</time><div><b>慶應義塾湘南藤沢高等部</b></div></li>
+      </ul>
+      <h3>Awards</h3>
+      <ul>
+        <li><time>2026</time><div><b>Hack Day Audience Award</b><span>JPHACKS 2026</span></div></li>
+        <li><time>2026</time><div><b>三菱重工賞</b><span>JPHACKS 2026 スポンサー賞</span></div></li>
+        <li><time>2025</time><div><b>Link-U Technologies 賞</b><span>第9回 和歌山県データ利活用コンペティション</span></div></li>
+        <li><time>2025</time><div><b>高校生部門 1 位</b><span>Digital Innovators Grand Prix 19</span></div></li>
+        <li><time>2024</time><div><b>Finalist</b><span>第4回 中高生データサイエンスコンテスト</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <p class="eyebrow">Contact</p>
+  <a class="contact-big" href="https://www.linkedin.com/in/yuta-kitajima" target="_blank" rel="noopener">
+    Let’s build something <span>that moves.<i>↗</i></span>
+  </a>
+  <div class="contact-row">
+    <span>© 2026 Yuta Kitajima</span>
+    <a href="https://www.linkedin.com/in/yuta-kitajima" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="https://github.com/kitaji0712" target="_blank" rel="noopener">GitHub</a>
+    <a href="#top">Top ↑</a>
+  </div>
+</section>
+</main>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
