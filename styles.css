@@ -10,7 +10,7 @@
   --glow-rgb: 255 255 255;           /* pools of light */
   --line: rgb(var(--ink-rgb) / .1);
   --line-2: rgb(var(--ink-rgb) / .18);
-  --accent-rgb: 205 255 64;
+  --accent-rgb: 242 221 39;           /* YIL yellow */
   --accent: rgb(var(--accent-rgb));
   --accent-text: var(--accent);      /* accent used as text on the ground */
   --btn-hover: #fff;

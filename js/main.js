@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=8';
+import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=9';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [

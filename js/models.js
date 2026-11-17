@@ -9,14 +9,14 @@ export async function preload() {
   const loader = new GLTFLoader();
   const base = new URL('../models/', import.meta.url);
   await Promise.all(['suyasuya'].map(async (name) => {
-    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=8', base).href)).scene; }
+    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=9', base).href)).scene; }
     catch (e) { console.warn('model failed to load:', name, e); }
   }));
 }
 
 /* Materials come from the page theme (<html data-theme>), so every model shares one finish. */
 export const THEME = document.documentElement.dataset.theme || 'noir';
-const accentRGB = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim().split(/\s+/).join(',') || '205,255,64';
+const accentRGB = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim().split(/\s+/).join(',') || '242,221,39';
 const LOOKS = {
   //        primary (ceramic)                     secondary                                  metal                              accent glow
   noir:     { bone: [0xe8e6e1, 0.38, 0.5, 0],    dark: [0x17171a, 0.34, 0, 0.85],    steel: [0x8b8b90, 0.3, 1],   glow: 0.55, shadow: 0.55 },

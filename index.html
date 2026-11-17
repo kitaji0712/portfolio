@@ -21,11 +21,11 @@
       document.querySelector('meta[name=theme-color]').content = T[t];
       if (t === 'stanford') document.write('<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">');
     }
-    const P = { lime: '205 255 64', blue: '84 128 255', mint: '72 255 190', mono: '243 242 239' };
+    const P = { yellow: '242 221 39', lime: '205 255 64', blue: '84 128 255', mint: '72 255 190', mono: '243 242 239' };
     if (P[q.get('accent')]) root.style.setProperty('--accent-rgb', P[q.get('accent')]);
   } catch (e) {}
 </script>
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -145,6 +145,6 @@
 </section>
 </main>
 
-<script type="module" src="js/main.js?v=8"></script>
+<script type="module" src="js/main.js?v=9"></script>
 </body>
 </html>
