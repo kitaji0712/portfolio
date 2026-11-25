@@ -9,7 +9,7 @@ export async function preload() {
   const loader = new GLTFLoader();
   const base = new URL('../models/', import.meta.url);
   await Promise.all(['suyasuya'].map(async (name) => {
-    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=9', base).href)).scene; }
+    try { gltf[name] = (await loader.loadAsync(new URL(name + '.glb?v=11', base).href)).scene; }
     catch (e) { console.warn('model failed to load:', name, e); }
   }));
 }

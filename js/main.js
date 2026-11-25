@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=9';
+import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=11';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [
@@ -22,15 +22,21 @@ const WORKS = [
     link: ['Watch the demo', 'https://youtu.be/DcB4BT7XZRE'],
   },
   {
-    key: 'suyasuya', title: 'suyasuya', sub: 'まわりの音に合わせて、うとうとするロボット', meta: 'Keio Robotics — In progress',
-    desc: '周りの音を聞いて、寝る・見渡す・うとうとする、ふわふわのロボット。サーボ 2 個と ESP32 だけで、首ふりとうなずきの 5 つの動きをつくります。速度と加速度の両方に上限をかけて、眠そうな動きに見えるようにしています。',
-    tags: ['ESP32', 'Servo', 'HRI', '3D print'],
+    key: 'suyasuya', title: 'suyasuya', sub: 'うるさくなると目を覚ます、居眠りロボット', meta: 'HRI 2027 投稿',
+    desc: '会話してよい図書館の学習スペースで、話す人と静かに勉強したい人が同じ部屋にいる。その間に置く、うたた寝するロボットです。部屋が騒がしい状態が続くと、頭を上げて見回し、黙って首を振る。静かになるとまた眠る。しゃべらず、警告せず、録音も個人の識別もしません。反応するのは音の大きさと時間の変化だけで、話の中身は聞きません。注意するのではなく、自分の声に気づくきっかけをつくるのが狙いです。うなずき用と首振り用のサーボ 2 個、ESP32 とマイクで動き、ヒューマンロボットインタラクションの国際会議 HRI 2027 に論文と動画を投稿しました。',
+    tags: ['ESP32', 'INMP441', 'Micro servo', '3D print', 'HRI'],
+    media: [
+      { type: 'video', src: 'assets/suyasuya-video.mp4', thumb: 'assets/suyasuya-video-thumb.jpg', w: 640, h: 360, label: 'Video', note: '2:58', alt: 'suyasuya の紹介動画' },
+      { type: 'pages', src: [1, 2, 3, 4].map((n) => `assets/suyasuya-paper-${n}.jpg`), file: 'assets/suyasuya-paper.pdf', thumb: 'assets/suyasuya-paper-thumb.jpg', w: 494, h: 640, label: 'Paper', note: '4 pages', alt: '論文 A Dozing Robot That Wakes Up to Noise' },
+    ],
   },
   {
     key: 'mocopi', title: 'mocopi Conductor', sub: '体の動きで、オーケストラを指揮する', meta: 'Unity — 2026',
     desc: 'モーションキャプチャ mocopi を着けて、腕の振りと視線でオーケストラを指揮する展示作品。見た楽器が選ばれ、振りの大きさが音になり、止めのポーズで演奏が止まります。Unity で制作しました。',
     tags: ['Unity', 'C#', 'mocopi', 'Motion capture'],
-    poster: ['assets/mocopi-poster.jpg', 'assets/mocopi-poster-thumb.jpg', 'mocopi Conductor の展示ポスター'],
+    media: [
+      { type: 'image', src: 'assets/mocopi-poster.jpg', thumb: 'assets/mocopi-poster-thumb.jpg', w: 320, h: 453, label: 'Poster', alt: 'mocopi Conductor の展示ポスター' },
+    ],
   },
   {
     key: 'kr', title: 'Keio Robotics', sub: 'ロボティクスチームの Web サイト', meta: 'Website — 2026',
@@ -102,41 +108,57 @@ list.innerHTML = WORKS.map((w, i) => `
       <p class="w-desc">${w.desc}</p>
       <ul class="w-tags">${w.tags.map((t) => `<li>${t}</li>`).join('')}</ul>
       ${w.link ? `<a class="btn ghost w-link" href="${w.link[1]}" target="_blank" rel="noopener">${w.link[0]} <i>↗</i></a>` : ''}
-      ${w.poster ? `<button class="poster" type="button" data-full="${w.poster[0]}" aria-label="${w.poster[2]}を全画面で見る">
-        <img src="${w.poster[1]}" alt="${w.poster[2]}" width="320" height="453" loading="lazy">
-        <span class="poster-cta">Poster <i>↗</i></span>
-      </button>` : ''}
+      ${w.media ? `<div class="media">${w.media.map((m, k) => `
+        <button class="media-card ${m.type}" type="button" data-i="${k}" aria-label="${m.alt}を開く">
+          <img src="${m.thumb}" alt="" width="${m.w}" height="${m.h}" loading="lazy">
+          ${m.type === 'video' ? '<span class="play" aria-hidden="true"></span>' : ''}
+          <span class="media-cta">${m.label}${m.note ? ` <em>${m.note}</em>` : ''}</span>
+        </button>`).join('')}</div>` : ''}
     </div>
   </li>`).join('');
 const rows = [...list.children];
 
-/* full-screen poster */
+/* full-screen viewer: an image, a paper's pages, or a video */
 const lb = document.createElement('dialog');
 lb.className = 'lightbox';
-lb.innerHTML = `<img alt=""><button class="lb-close" type="button" aria-label="閉じる">Close</button>`;
+lb.innerHTML = `<div class="lb-body"></div>
+  <div class="lb-bar"><a class="lb-file" target="_blank" rel="noopener" hidden>PDF ↗</a><button class="lb-close" type="button" aria-label="閉じる">Close</button></div>`;
 document.body.append(lb);
-const lbImg = lb.querySelector('img');
+const lbBody = lb.querySelector('.lb-body'), lbFile = lb.querySelector('.lb-file');
 function closeLb() {
   lb.classList.remove('on');
-  setTimeout(() => { lb.close(); lb.classList.remove('zoom'); }, reduced ? 0 : 200);
+  lbBody.querySelector('video')?.pause();
+  setTimeout(() => { lb.close(); lb.classList.remove('zoom'); lbBody.innerHTML = ''; }, reduced ? 0 : 200);
 }
-list.addEventListener('click', (e) => {
-  const b = e.target.closest('.poster');
-  if (!b) return;
-  lbImg.src = b.dataset.full; lbImg.alt = b.querySelector('img').alt;
+function openMedia(m) {
+  lb.dataset.type = m.type;
+  if (m.type === 'video') {
+    lbBody.innerHTML = `<video src="${m.src}" poster="${m.thumb.replace('-thumb', '')}" controls playsinline autoplay></video>`;
+  } else {
+    const pages = Array.isArray(m.src) ? m.src : [m.src];
+    lbBody.innerHTML = pages.map((src, n) => `<img src="${src}" alt="${m.alt}${pages.length > 1 ? `（${n + 1}/${pages.length}）` : ''}" loading="${n ? 'lazy' : 'eager'}">`).join('');
+  }
+  lbFile.hidden = !m.file;
+  if (m.file) lbFile.href = m.file;
+  lb.scrollTop = 0;
   lb.showModal();
   requestAnimationFrame(() => lb.classList.add('on'));
+}
+list.addEventListener('click', (e) => {
+  const b = e.target.closest('.media-card');
+  if (!b) return;
+  openMedia(WORKS.find((w) => w.key === b.closest('.w').dataset.key).media[+b.dataset.i]);
 });
-lbImg.addEventListener('click', (e) => {                 // tap to read at full width, tap again to fit
-  e.stopPropagation();
+lbBody.addEventListener('click', (e) => {               // a single image: tap to read at full width, tap again to fit
+  if (lb.dataset.type !== 'image' || e.target.tagName !== 'IMG') return;
   lb.classList.toggle('zoom');
   if (lb.classList.contains('zoom')) {
-    const r = lbImg.getBoundingClientRect();
+    const r = e.target.getBoundingClientRect();
     lb.scrollTop = ((e.clientY - r.top) / r.height) * lb.scrollHeight - innerHeight / 2;
   }
 });
 lb.querySelector('.lb-close').addEventListener('click', closeLb);
-lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(); });
+lb.addEventListener('click', (e) => { if (e.target === lb || e.target === lbBody) closeLb(); });
 lb.addEventListener('cancel', (e) => { e.preventDefault(); closeLb(); });
 let activeKey = null;
 let viewer = null;
