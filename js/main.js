@@ -1,10 +1,33 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=11';
+import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=12';
 
 /* ───────── content: edit here ───────── */
 const WORKS = [
+  {
+    key: 'suyasuya', title: 'suyasuya', sub: 'うるさくなると目を覚ます、居眠りロボット', meta: 'HRI 2027 投稿',
+    desc: '会話してよい図書館の学習スペースで、話す人と静かに勉強したい人が同じ部屋にいる。その間に置く、うたた寝するロボットです。部屋が騒がしい状態が続くと、頭を上げて見回し、黙って首を振る。静かになるとまた眠る。しゃべらず、警告せず、録音も個人の識別もしません。反応するのは音の大きさと時間の変化だけで、話の中身は聞きません。注意するのではなく、自分の声に気づくきっかけをつくるのが狙いです。うなずき用と首振り用のサーボ 2 個、ESP32 とマイクで動き、ヒューマンロボットインタラクションの国際会議 HRI 2027 に論文と動画を投稿しました。',
+    tags: ['ESP32', 'INMP441', 'Micro servo', '3D print', 'HRI'],
+    media: [
+      { type: 'video', src: 'assets/suyasuya-video.mp4', thumb: 'assets/suyasuya-video-thumb.jpg', w: 640, h: 360, label: 'Video', note: '2:58', alt: 'suyasuya の紹介動画' },
+      { type: 'pages', src: [1, 2, 3, 4].map((n) => `assets/suyasuya-paper-${n}.jpg`), file: 'assets/suyasuya-paper.pdf', thumb: 'assets/suyasuya-paper-thumb.jpg', w: 494, h: 640, label: 'Paper', note: '4 pages', alt: '論文 A Dozing Robot That Wakes Up to Noise' },
+    ],
+  },
+  {
+    key: 'omoi', title: 'オモイゾウコ', jp: true, sub: 'やることが残っている夜ほど、冷蔵庫の扉が重くなる', meta: 'JPHACKS 2026',
+    desc: 'その日の達成度が、冷蔵庫の扉の「重さ」になって返ってくるハードウェア。通知は無視できても、手を伸ばしたその瞬間の重さは無視できない。JPHACKS 2026 で Hack Day Audience Award と三菱重工賞を受賞しました。',
+    tags: ['Hardware', 'Firmware', 'Motor control'],
+    link: ['Watch the demo', 'https://youtu.be/DcB4BT7XZRE'],
+  },
+  {
+    key: 'mocopi', title: 'mocopi Conductor', sub: '体の動きで、オーケストラを指揮する', meta: 'Unity — 2026',
+    desc: 'モーションキャプチャ mocopi を着けて、腕の振りと視線でオーケストラを指揮する展示作品。見た楽器が選ばれ、振りの大きさが音になり、止めのポーズで演奏が止まります。Unity で制作しました。',
+    tags: ['Unity', 'C#', 'mocopi', 'Motion capture'],
+    media: [
+      { type: 'image', src: 'assets/mocopi-poster.jpg', thumb: 'assets/mocopi-poster-thumb.jpg', w: 320, h: 453, label: 'Poster', alt: 'mocopi Conductor の展示ポスター' },
+    ],
+  },
   {
     key: 'stackchan', title: 'Stack-chan', sub: '手元の GPU だけで喋る、ラウンジの会話ロボット', meta: 'Keio Robotics — 2026',
     desc: '矢上イノベーションラボのラウンジにいるスタックチャン。音声認識・LLM・音声合成をすべて手元の RTX 4090 で動かし、クラウドには一切つながずに日本語で会話します。顔と声で「前にも会った人」を見分けて、その人との会話を覚えています。聞かれたときだけ大学の資料を検索して答える仕組みも入れました。',
@@ -16,32 +39,10 @@ const WORKS = [
     tags: ['TypeScript', 'Rapier', 'LIPM', 'MuJoCo', 'PPO', 'ONNX'],
   },
   {
-    key: 'omoi', title: 'オモイゾウコ', jp: true, sub: 'やることが残っている夜ほど、冷蔵庫の扉が重くなる', meta: 'JPHACKS 2026',
-    desc: 'その日の達成度が、冷蔵庫の扉の「重さ」になって返ってくるハードウェア。通知は無視できても、手を伸ばしたその瞬間の重さは無視できない。JPHACKS 2026 で Hack Day Audience Award と三菱重工賞を受賞しました。',
-    tags: ['Hardware', 'Firmware', 'Motor control'],
-    link: ['Watch the demo', 'https://youtu.be/DcB4BT7XZRE'],
-  },
-  {
-    key: 'suyasuya', title: 'suyasuya', sub: 'うるさくなると目を覚ます、居眠りロボット', meta: 'HRI 2027 投稿',
-    desc: '会話してよい図書館の学習スペースで、話す人と静かに勉強したい人が同じ部屋にいる。その間に置く、うたた寝するロボットです。部屋が騒がしい状態が続くと、頭を上げて見回し、黙って首を振る。静かになるとまた眠る。しゃべらず、警告せず、録音も個人の識別もしません。反応するのは音の大きさと時間の変化だけで、話の中身は聞きません。注意するのではなく、自分の声に気づくきっかけをつくるのが狙いです。うなずき用と首振り用のサーボ 2 個、ESP32 とマイクで動き、ヒューマンロボットインタラクションの国際会議 HRI 2027 に論文と動画を投稿しました。',
-    tags: ['ESP32', 'INMP441', 'Micro servo', '3D print', 'HRI'],
-    media: [
-      { type: 'video', src: 'assets/suyasuya-video.mp4', thumb: 'assets/suyasuya-video-thumb.jpg', w: 640, h: 360, label: 'Video', note: '2:58', alt: 'suyasuya の紹介動画' },
-      { type: 'pages', src: [1, 2, 3, 4].map((n) => `assets/suyasuya-paper-${n}.jpg`), file: 'assets/suyasuya-paper.pdf', thumb: 'assets/suyasuya-paper-thumb.jpg', w: 494, h: 640, label: 'Paper', note: '4 pages', alt: '論文 A Dozing Robot That Wakes Up to Noise' },
-    ],
-  },
-  {
-    key: 'mocopi', title: 'mocopi Conductor', sub: '体の動きで、オーケストラを指揮する', meta: 'Unity — 2026',
-    desc: 'モーションキャプチャ mocopi を着けて、腕の振りと視線でオーケストラを指揮する展示作品。見た楽器が選ばれ、振りの大きさが音になり、止めのポーズで演奏が止まります。Unity で制作しました。',
-    tags: ['Unity', 'C#', 'mocopi', 'Motion capture'],
-    media: [
-      { type: 'image', src: 'assets/mocopi-poster.jpg', thumb: 'assets/mocopi-poster-thumb.jpg', w: 320, h: 453, label: 'Poster', alt: 'mocopi Conductor の展示ポスター' },
-    ],
-  },
-  {
     key: 'kr', title: 'Keio Robotics', sub: 'ロボティクスチームの Web サイト', meta: 'Website — 2026',
     desc: 'Keio Robotics の公式サイト。構成の設計からデザインシステム、実装、お知らせを更新する仕組みまで。トップではロボットの 3D モデルが動きます。',
     tags: ['HTML / CSS', 'three.js', 'CMS'],
+    link: ['Visit the site', 'https://kr-robotics.jp/'],
   },
   {
     key: 'skip', title: 'SKIP', sub: 'Stanford × Keio 交流プログラムの Web サイト', meta: 'Website — 2026',
