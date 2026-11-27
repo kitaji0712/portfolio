@@ -1,5 +1,8 @@
 {
   "_note": "サイトの文章はすべてここ。?edit を付けてサイトを開くと、画面上で直して Save でここに保存されます。",
+  "nav": {
+    "motto": "If there’s a will, there’s a way."
+  },
   "hero": {
     "eyebrow": "Physical AI <span>/</span> Robotics <span>/</span> Software",
     "facts": [

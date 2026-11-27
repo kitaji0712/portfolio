@@ -37,12 +37,6 @@ renderFacts(); renderCv(); fillText();
 { const cb = $('.cb-text'); (cb.querySelector('span:last-of-type') || cb).insertAdjacentHTML('beforeend', '<i contenteditable="false">↗</i>'); }
 
 /* ───────── small UI ───────── */
-function tick() {
-  $('#clock').textContent = new Intl.DateTimeFormat('ja-JP', {
-    timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', hour12: false,
-  }).format(new Date());
-}
-tick(); setInterval(tick, 20000);
 
 function fitName() {
   const h = $('.name');
