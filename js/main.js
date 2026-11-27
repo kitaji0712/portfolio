@@ -60,6 +60,7 @@ function fitName() {
 }
 fitName();
 document.fonts?.ready.then(fitName);
+new IntersectionObserver(([e]) => $('.nav').classList.toggle('past', !e.isIntersecting && e.boundingClientRect.top < 0), { rootMargin: '-60px 0px 0px 0px' }).observe($('.name'));
 addEventListener('resize', fitName);
 
 /* ───────── theme switcher (only while trying themes) ───────── */

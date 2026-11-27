@@ -134,7 +134,19 @@ html[data-theme="apple"] .ground::after, html[data-theme="pastel"] .ground::afte
   height: 60px; padding: 0 var(--pad);
   background: linear-gradient(rgb(var(--bg-rgb) / .82), rgb(var(--bg-rgb) / .5) 60%, transparent);
 }
-.nav-id { font-weight: 600; font-size: 15px; letter-spacing: -.02em; }
+.nav-id { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; letter-spacing: -.02em; }
+/* monogram while the big name is on screen; the full name slides in once it has scrolled away */
+.mark {
+  position: relative; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid rgb(var(--ink-rgb) / .22); background: rgb(var(--ink-rgb) / .04);
+  font: 700 11.5px/1 var(--sans); letter-spacing: -.06em; padding-right: .06em; color: var(--fg);
+  transition: border-color 200ms ease;
+}
+.mark i { position: absolute; right: 4px; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+@media (hover: hover) { .nav-id:hover .mark { border-color: rgb(var(--ink-rgb) / .5); } }
+.nav-name { opacity: 0; transform: translateX(-6px); filter: blur(3px); transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out), filter 300ms var(--ease-out); }
+.nav.past .nav-name { opacity: 1; transform: none; filter: none; }
+@media (max-width: 600px) { .nav-name { display: none; } }
 .nav-status { color: var(--mute); display: flex; align-items: center; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
 .nav-status i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 .nav nav { display: flex; align-items: center; gap: clamp(16px, 2.2vw, 30px); font-size: 14px; }
