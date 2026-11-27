@@ -5,7 +5,7 @@ import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v
 
 /* ───────── content: lives in content.json (edit on the site with ?edit) ───────── */
 const EDIT = new URLSearchParams(location.search).has('edit');
-const ED = EDIT ? await import('./edit.js?v=13') : null;
+const ED = EDIT ? await import('./edit.js?v=14') : null;
 const fresh = ED && await ED.loadFresh();
 const C = fresh?.data ?? await fetch('content.json', { cache: EDIT ? 'no-store' : 'no-cache' }).then((r) => r.json());
 const WORKS = C.works;
@@ -78,6 +78,10 @@ list.innerHTML = WORKS.map((w, i) => `
     </div>
     <div class="w-pad">
       <p class="w-desc" data-k="works.${i}.desc">${esc(w.desc)}</p>
+      ${w.notes?.length || EDIT ? `<details class="w-notes"${EDIT ? ' open' : ''}>
+        <summary><span>詳しく見る</span><em>Technical notes</em></summary>
+        <ul data-notes="works.${i}.notes">${(w.notes || []).map((t, k) => `<li data-k="works.${i}.notes.${k}">${esc(t)}</li>`).join('')}</ul>
+      </details>` : ''}
       <ul class="w-tags" data-tags="works.${i}.tags">${w.tags.map((t, k) => `<li data-k="works.${i}.tags.${k}">${esc(t)}</li>`).join('')}</ul>
       ${w.link ? `<a class="btn ghost w-link" href="${esc(w.link[1])}" target="_blank" rel="noopener"><span data-k="works.${i}.link.0">${esc(w.link[0])}</span> <i>↗</i></a>` : ''}
       ${w.media ? `<div class="media">${w.media.map((m, k) => `

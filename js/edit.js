@@ -54,7 +54,7 @@ function tidy(C) {
   const c = structuredClone(C);
   const t = (s) => (typeof s === 'string' ? s.replace(/ /g, ' ').trim() : s);
   c.hero.facts = c.hero.facts.map(t).filter(Boolean);
-  c.works.forEach((w) => { w.tags = w.tags.map(t).filter(Boolean); ['title', 'sub', 'meta', 'desc'].forEach((k) => (w[k] = t(w[k]))); });
+  c.works.forEach((w) => { w.tags = w.tags.map(t).filter(Boolean); w.notes = (w.notes || []).map(t).filter(Boolean); ['title', 'sub', 'meta', 'desc'].forEach((k) => (w[k] = t(w[k]))); });
   c.about.cv.forEach((s) => { s.items = s.items.map((it) => ({ time: t(it.time), title: t(it.title), text: t(it.text) })).filter((it) => it.time || it.title); });
   return c;
 }
@@ -142,6 +142,9 @@ export function startEditor({ C, sha, fillText, renderCv, renderFacts }) {
     document.querySelectorAll('[data-tags]').forEach((ul) => {
       ul.insertAdjacentHTML('beforeend', `<li class="ed-add" contenteditable="false"><button type="button" data-add="tag" data-path="${ul.dataset.tags}">+ tag</button></li>`);
     });
+    document.querySelectorAll('[data-notes]').forEach((ul) => {
+      ul.insertAdjacentHTML('beforeend', `<li class="ed-add" contenteditable="false"><button type="button" data-add="tag" data-path="${ul.dataset.notes}">+ note</button></li>`);
+    });
     document.querySelectorAll('#cv li[data-list]').forEach((li) => {
       li.insertAdjacentHTML('beforeend', '<span class="ed-ops" contenteditable="false"><button type="button" data-op="up" aria-label="上へ">↑</button><button type="button" data-op="down" aria-label="下へ">↓</button><button type="button" data-op="del" aria-label="削除">×</button></span>');
     });
@@ -162,7 +165,7 @@ export function startEditor({ C, sha, fillText, renderCv, renderFacts }) {
     if (b.dataset.add === 'facts') { C.hero.facts.push(''); rebuild('facts'); focus = `hero.facts.${C.hero.facts.length - 1}`; }
     if (b.dataset.add === 'cv') { const s = +b.dataset.s; C.about.cv[s].items.unshift({ time: String(new Date().getFullYear()), title: '', text: '' }); rebuild('cv'); focus = `about.cv.${s}.items.0.title`; }
     if (b.dataset.add === 'tag') {
-      const arr = b.dataset.path.split('.').reduce((o, k) => o[k], C); arr.push('');
+      const ks = b.dataset.path.split('.'); const last = ks.pop(); const par = ks.reduce((o, k) => o[k], C); const arr = (par[last] ||= []); arr.push('');
       const k = `${b.dataset.path}.${arr.length - 1}`;
       b.parentElement.insertAdjacentHTML('beforebegin', `<li data-k="${k}"></li>`); arm(b.closest('ul')); focus = k;
     }

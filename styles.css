@@ -447,3 +447,19 @@ html[data-theme="apple"] .ground::after, html[data-theme="pastel"] .ground::afte
 .ed-row .ed-btn.ghost:first-child { margin-right: auto; }
 @media (max-width: 600px) { .ed-key { display: none; } .ed-bar { left: 16px; right: 16px; transform: none; width: auto; } }
 .editing .hero-copy .eyebrow, .editing .hero-copy .facts { pointer-events: auto; }
+
+/* technical notes: folded under each description */
+.w-notes { margin-top: 16px; max-width: 65ch; border-top: 1px solid var(--line-2); }
+.w-notes summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 10px; padding: 12px 0 2px; font-family: var(--jp); font-size: 13px; color: var(--body); }
+.w-notes summary::-webkit-details-marker { display: none; }
+.w-notes summary::before { content: '+'; font-family: var(--mono); width: 1ch; color: var(--mute); transition: transform .25s ease; }
+.w-notes[open] summary::before { transform: rotate(45deg); }
+.w-notes summary em { font-style: normal; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.w-notes summary:hover span { color: var(--fg); text-decoration: underline; text-underline-offset: 4px; }
+.w-notes ul { margin: 10px 0 4px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.w-notes li { position: relative; padding-left: 18px; font-family: var(--jp); font-size: 13.5px; line-height: 1.85; color: var(--body); }
+.w-notes li::before { content: ''; position: absolute; left: 2px; top: .9em; width: 6px; height: 1px; background: var(--mute); }
+.w-notes li.ed-add::before { display: none; }
+.w-notes[open] ul { animation: notes-in .3s ease; }
+@keyframes notes-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .w-notes[open] ul { animation: none; } }
