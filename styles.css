@@ -384,3 +384,54 @@ html[data-theme="apple"] .ground::after, html[data-theme="pastel"] .ground::afte
   .enter { animation: none; }
   * { transition-duration: .01ms !important; }
 }
+
+/* ───────── contact text (from content.json) ───────── */
+.contact-big > span.cb-text, .contact-big:hover > span.cb-text { display: inline; color: inherit; }
+
+/* ───────── on-page editor (?edit) ───────── */
+.editing [contenteditable] { outline: 1px dashed rgb(var(--accent-rgb) / .35); outline-offset: 3px; border-radius: 2px; cursor: text; transition: outline-color 120ms ease; }
+.editing [contenteditable]:hover { outline-color: rgb(var(--accent-rgb) / .7); }
+.editing [contenteditable]:focus { outline: 1.5px solid rgb(var(--accent-rgb)); background: rgb(var(--accent-rgb) / .06); }
+.editing [contenteditable]:empty::before { content: '…'; color: var(--dim); }
+.editing [contenteditable="false"], .editing .ed-add, .editing .ed-ops { outline: none; background: none; cursor: default; }
+.editing .w-tags li[contenteditable] { min-width: 2em; }
+.ed-add button, .ed-more, .ed-ops button {
+  font: 500 12px/1 var(--mono, ui-monospace, monospace); color: rgb(var(--accent-rgb)); background: rgb(var(--accent-rgb) / .08);
+  border: 1px dashed rgb(var(--accent-rgb) / .5); border-radius: 999px; padding: 6px 10px; cursor: pointer;
+}
+.ed-more { margin-top: 12px; }
+.editing .cv li { position: relative; }
+.editing .cv .ed-ops { position: absolute; right: 0; top: 8px; padding: 2px 0 2px 8px; background: var(--bg); display: flex; gap: 4px; opacity: 0; transition: opacity 120ms ease; }
+.editing .cv li:hover .ed-ops, .editing .cv li:focus-within .ed-ops { opacity: 1; }
+.ed-ops button { padding: 4px 8px; }
+.ed-bar {
+  position: fixed; z-index: 1000; left: 50%; bottom: 16px; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 32px);
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px;
+  background: rgb(18 18 20 / .92); color: #f3f2ef; border: 1px solid rgb(255 255 255 / .12);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 12px 40px rgb(0 0 0 / .45);
+  font: 13px/1.4 var(--jp, system-ui);
+}
+.ed-msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ed-dot { width: 8px; height: 8px; border-radius: 50%; background: #8a8a8a; flex: none; }
+.ed-bar[data-state="dirty"] .ed-dot { background: rgb(var(--accent-rgb)); }
+.ed-bar[data-state="busy"] .ed-dot { background: rgb(var(--accent-rgb)); animation: ed-pulse 900ms ease-in-out infinite; }
+.ed-bar[data-state="ok"] .ed-dot { background: #4ade80; }
+.ed-bar[data-state="err"] .ed-dot { background: #f87171; }
+@keyframes ed-pulse { 50% { opacity: .3; } }
+.ed-key { background: none; border: 0; color: #a3a3a3; font: inherit; cursor: pointer; padding: 6px; }
+.ed-key:hover { color: #fff; }
+.ed-btn { font: 500 13px/1 var(--sans, system-ui); padding: 9px 16px; border-radius: 999px; border: 1px solid transparent; background: rgb(var(--accent-rgb)); color: #111; cursor: pointer; text-decoration: none; }
+.ed-btn.ghost { background: none; color: inherit; border-color: rgb(255 255 255 / .2); }
+.ed-btn:disabled { opacity: .35; cursor: default; }
+.ed-dlg { max-width: min(520px, calc(100vw - 32px)); padding: 28px; border-radius: 16px; border: 1px solid rgb(255 255 255 / .12); background: #141416; color: #f3f2ef; font: 14px/1.8 var(--jp, system-ui); }
+.ed-dlg::backdrop { background: rgb(0 0 0 / .6); backdrop-filter: blur(4px); }
+.ed-dlg h2 { font-size: 18px; margin: 0 0 8px; }
+.ed-dlg p { color: #a3a3a3; margin: 0 0 12px; }
+.ed-dlg ol { padding-left: 1.3em; margin: 0 0 16px; }
+.ed-dlg a { color: rgb(var(--accent-rgb)); }
+.ed-dlg code { font-size: 12px; }
+.ed-dlg input { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 10px; border: 1px solid rgb(255 255 255 / .2); background: #0b0b0c; color: inherit; font: 13px var(--mono, ui-monospace, monospace); }
+.ed-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.ed-row .ed-btn.ghost:first-child { margin-right: auto; }
+@media (max-width: 600px) { .ed-key { display: none; } .ed-bar { left: 16px; right: 16px; transform: none; width: auto; } }
+.editing .hero-copy .eyebrow, .editing .hero-copy .facts { pointer-events: auto; }

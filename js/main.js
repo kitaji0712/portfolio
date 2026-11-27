@@ -1,64 +1,40 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=12';
+import { builders, propBall, propNut, preload, LOOK, THEME } from './models.js?v=13';
 
-/* ───────── content: edit here ───────── */
-const WORKS = [
-  {
-    key: 'suyasuya', title: 'suyasuya', sub: 'うるさくなると目を覚ます、居眠りロボット', meta: 'HRI 2027 投稿',
-    desc: '会話してよい図書館の学習スペースで、話す人と静かに勉強したい人が同じ部屋にいる。その間に置く、うたた寝するロボットです。部屋が騒がしい状態が続くと、頭を上げて見回し、黙って首を振る。静かになるとまた眠る。しゃべらず、警告せず、録音も個人の識別もしません。反応するのは音の大きさと時間の変化だけで、話の中身は聞きません。注意するのではなく、自分の声に気づくきっかけをつくるのが狙いです。うなずき用と首振り用のサーボ 2 個、ESP32 とマイクで動き、ヒューマンロボットインタラクションの国際会議 HRI 2027 に論文と動画を投稿しました。',
-    tags: ['ESP32', 'INMP441', 'Micro servo', '3D print', 'HRI'],
-    media: [
-      { type: 'video', src: 'assets/suyasuya-video.mp4', thumb: 'assets/suyasuya-video-thumb.jpg', w: 640, h: 360, label: 'Video', note: '2:58', alt: 'suyasuya の紹介動画' },
-      { type: 'pages', src: [1, 2, 3, 4].map((n) => `assets/suyasuya-paper-${n}.jpg`), file: 'assets/suyasuya-paper.pdf', thumb: 'assets/suyasuya-paper-thumb.jpg', w: 494, h: 640, label: 'Paper', note: '4 pages', alt: '論文 A Dozing Robot That Wakes Up to Noise' },
-    ],
-  },
-  {
-    key: 'omoi', title: 'オモイゾウコ', jp: true, sub: 'やることが残っている夜ほど、冷蔵庫の扉が重くなる', meta: 'JPHACKS 2026',
-    desc: 'その日の達成度が、冷蔵庫の扉の「重さ」になって返ってくるハードウェア。通知は無視できても、手を伸ばしたその瞬間の重さは無視できない。JPHACKS 2026 で Hack Day Audience Award と三菱重工賞を受賞しました。',
-    tags: ['Hardware', 'Firmware', 'Motor control'],
-    link: ['Watch the demo', 'https://youtu.be/DcB4BT7XZRE'],
-  },
-  {
-    key: 'mocopi', title: 'mocopi Conductor', sub: '体の動きで、オーケストラを指揮する', meta: 'Unity — 2026',
-    desc: 'モーションキャプチャ mocopi を着けて、腕の振りと視線でオーケストラを指揮する展示作品。見た楽器が選ばれ、振りの大きさが音になり、止めのポーズで演奏が止まります。Unity で制作しました。',
-    tags: ['Unity', 'C#', 'mocopi', 'Motion capture'],
-    media: [
-      { type: 'image', src: 'assets/mocopi-poster.jpg', thumb: 'assets/mocopi-poster-thumb.jpg', w: 320, h: 453, label: 'Poster', alt: 'mocopi Conductor の展示ポスター' },
-    ],
-  },
-  {
-    key: 'stackchan', title: 'Stack-chan', sub: '手元の GPU だけで喋る、ラウンジの会話ロボット', meta: 'Keio Robotics — 2026',
-    desc: '矢上イノベーションラボのラウンジにいるスタックチャン。音声認識・LLM・音声合成をすべて手元の RTX 4090 で動かし、クラウドには一切つながずに日本語で会話します。顔と声で「前にも会った人」を見分けて、その人との会話を覚えています。聞かれたときだけ大学の資料を検索して答える仕組みも入れました。',
-    tags: ['Local LLM', 'Ollama', 'VOICEVOX', 'InsightFace', 'RAG', 'M5Stack Core2'],
-  },
-  {
-    key: 'g1', title: 'G1 Walking Simulator', sub: 'ブラウザの中で歩くヒューマノイド', meta: 'Simulation — 2026',
-    desc: 'G1 級の小型ヒューマノイドをブラウザで歩かせる 3D シミュレーター。LIPM による歩行生成とキャプチャポイントによるバランス制御を TypeScript と Python の両方で実装し、MuJoCo + PPO で学習したポリシーも ONNX でそのまま持ち込めます。軽く押せば踏みとどまり、強く押せばちゃんと転びます。',
-    tags: ['TypeScript', 'Rapier', 'LIPM', 'MuJoCo', 'PPO', 'ONNX'],
-  },
-  {
-    key: 'kr', title: 'Keio Robotics', sub: 'ロボティクスチームの Web サイト', meta: 'Website — 2026',
-    desc: 'Keio Robotics の公式サイト。構成の設計からデザインシステム、実装、お知らせを更新する仕組みまで。トップではロボットの 3D モデルが動きます。',
-    tags: ['HTML / CSS', 'three.js', 'CMS'],
-    link: ['Visit the site', 'https://kr-robotics.jp/'],
-  },
-  {
-    key: 'skip', title: 'SKIP', sub: 'Stanford × Keio 交流プログラムの Web サイト', meta: 'Website — 2026',
-    desc: '運営に関わっている Stanford 大学との交流プログラム SKIP のサイト。ロゴや文字の形をサテンステッチの列に変換して、一針ずつ canvas に刺繍していく表現をつくりました。日本語と英語の併記です。',
-    tags: ['HTML / CSS', 'Canvas', 'Bilingual'],
-  },
-  {
-    key: 'bucket', title: 'Bucket', sub: '「やりたいこと」を、一緒にやる人と持つ', meta: 'iOS app — 2026',
-    desc: '友達や恋人とやりたいことを共有して、実際にやって、あとで振り返る iPhone アプリ。インスタやマップの共有からそのまま追加でき、候補日の投票から当日のリマインドまでを 1 本でつなぎます。',
-    tags: ['Swift', 'SwiftUI', 'Firebase', 'MapKit'],
-  },
-];
+/* ───────── content: lives in content.json (edit on the site with ?edit) ───────── */
+const EDIT = new URLSearchParams(location.search).has('edit');
+const ED = EDIT ? await import('./edit.js?v=13') : null;
+const fresh = ED && await ED.loadFresh();
+const C = fresh?.data ?? await fetch('content.json', { cache: EDIT ? 'no-store' : 'no-cache' }).then((r) => r.json());
+const WORKS = C.works;
 const LABEL = Object.fromEntries(WORKS.map((w, i) => [w.key, [String(i + 1).padStart(2, '0'), w.title]]));
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s) => document.querySelector(s);
+
+/* ───────── page text from content.json ───────── */
+const esc = (t = '') => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const get = (path) => path.split('.').reduce((o, k) => o?.[k], C);
+function fillText(root = document) {
+  root.querySelectorAll('[data-k]').forEach((el) => {
+    const v = get(el.dataset.k) ?? '';
+    if ('html' in el.dataset) el.innerHTML = v; else el.textContent = v;
+  });
+}
+function renderFacts() {
+  $('#facts').innerHTML = C.hero.facts.map((_, i) => `<li data-k="hero.facts.${i}"></li>`).join('');
+}
+function renderCv() {
+  $('#cv').innerHTML = C.about.cv.map((sec, s) => `
+    <h3 data-k="about.cv.${s}.title"></h3>
+    <ul>${sec.items.map((_, i) => `
+      <li data-list="about.cv.${s}.items" data-i="${i}"><time data-k="about.cv.${s}.items.${i}.time"></time><div><b data-k="about.cv.${s}.items.${i}.title"></b><span data-k="about.cv.${s}.items.${i}.text"></span></div></li>`).join('')}
+    </ul>`).join('');
+}
+renderFacts(); renderCv(); fillText();
+{ const cb = $('.cb-text'); (cb.querySelector('span:last-of-type') || cb).insertAdjacentHTML('beforeend', '<i contenteditable="false">↗</i>'); }
 
 /* ───────── small UI ───────── */
 function tick() {
@@ -101,14 +77,14 @@ list.innerHTML = WORKS.map((w, i) => `
   <li class="w" data-key="${w.key}">
     <div class="w-head">
       <span class="w-no">${String(i + 1).padStart(2, '0')}</span>
-      <h3 class="w-title${w.jp ? ' jp' : ''}">${w.title}</h3>
-      <span class="w-meta">${w.meta}</span>
-      <p class="w-sub">${w.sub}</p>
+      <h3 class="w-title${w.jp ? ' jp' : ''}" data-k="works.${i}.title">${esc(w.title)}</h3>
+      <span class="w-meta" data-k="works.${i}.meta">${esc(w.meta)}</span>
+      <p class="w-sub" data-k="works.${i}.sub">${esc(w.sub)}</p>
     </div>
     <div class="w-pad">
-      <p class="w-desc">${w.desc}</p>
-      <ul class="w-tags">${w.tags.map((t) => `<li>${t}</li>`).join('')}</ul>
-      ${w.link ? `<a class="btn ghost w-link" href="${w.link[1]}" target="_blank" rel="noopener">${w.link[0]} <i>↗</i></a>` : ''}
+      <p class="w-desc" data-k="works.${i}.desc">${esc(w.desc)}</p>
+      <ul class="w-tags" data-tags="works.${i}.tags">${w.tags.map((t, k) => `<li data-k="works.${i}.tags.${k}">${esc(t)}</li>`).join('')}</ul>
+      ${w.link ? `<a class="btn ghost w-link" href="${esc(w.link[1])}" target="_blank" rel="noopener"><span data-k="works.${i}.link.0">${esc(w.link[0])}</span> <i>↗</i></a>` : ''}
       ${w.media ? `<div class="media">${w.media.map((m, k) => `
         <button class="media-card ${m.type}" type="button" data-i="${k}" aria-label="${m.alt}を開く">
           <img src="${m.thumb}" alt="" width="${m.w}" height="${m.h}" loading="lazy">
@@ -118,6 +94,7 @@ list.innerHTML = WORKS.map((w, i) => `
     </div>
   </li>`).join('');
 const rows = [...list.children];
+if (ED) ED.startEditor({ C, sha: fresh?.sha, fillText, renderCv, renderFacts });
 
 /* full-screen viewer: an image, a paper's pages, or a video */
 const lb = document.createElement('dialog');
