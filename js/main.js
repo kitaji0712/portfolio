@@ -83,7 +83,7 @@ list.innerHTML = WORKS.map((w, i) => `
         <ul data-notes="works.${i}.notes">${(w.notes || []).map((t, k) => `<li data-k="works.${i}.notes.${k}">${esc(t)}</li>`).join('')}</ul>
       </details>` : ''}
       <ul class="w-tags" data-tags="works.${i}.tags">${w.tags.map((t, k) => `<li data-k="works.${i}.tags.${k}">${esc(t)}</li>`).join('')}</ul>
-      ${w.link ? `<a class="btn ghost w-link" href="${esc(w.link[1])}" target="_blank" rel="noopener"><span data-k="works.${i}.link.0">${esc(w.link[0])}</span> <i>↗</i></a>` : ''}
+      ${w.link || w.repo ? `<div class="w-links">${w.link ? `<a class="btn ghost w-link" href="${esc(w.link[1])}" target="_blank" rel="noopener"><span data-k="works.${i}.link.0">${esc(w.link[0])}</span> <i>↗</i></a>` : ''}${w.repo ? `<a class="btn ghost w-link" href="${esc(w.repo)}" target="_blank" rel="noopener">GitHub <i>↗</i></a>` : ''}</div>` : ''}
       ${w.media ? `<div class="media">${w.media.map((m, k) => `
         <button class="media-card ${m.type}" type="button" data-i="${k}" aria-label="${m.alt}を開く">
           <img src="${m.thumb}" alt="" width="${m.w}" height="${m.h}" loading="lazy">
